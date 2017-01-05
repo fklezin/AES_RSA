@@ -1,6 +1,7 @@
 /**
  * Created by fklezin on 4.1.2017.
  */
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,26 +17,23 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 
-
 public class AES {
-    private static final String ALGORITHM = "AES";
-    private static final String TRANSFORMATION = "AES";
 
     public static void encrypt(String key, File inputFile, File outputFile)
-            throws CryptoException {
+            throws AESException {
         doCrypto(Cipher.ENCRYPT_MODE, key, inputFile, outputFile);
     }
 
     public static void decrypt(String key, File inputFile, File outputFile)
-            throws CryptoException {
+            throws AESException {
         doCrypto(Cipher.DECRYPT_MODE, key, inputFile, outputFile);
     }
 
     private static void doCrypto(int cipherMode, String key, File inputFile,
-                                 File outputFile) throws CryptoException {
+                                 File outputFile) throws AESException {
         try {
-            Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            Key secretKey = new SecretKeySpec(key.getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
             cipher.init(cipherMode, secretKey);
 
             FileInputStream inputStream = new FileInputStream(inputFile);
@@ -53,11 +51,11 @@ public class AES {
         } catch (NoSuchPaddingException | NoSuchAlgorithmException
                 | InvalidKeyException | BadPaddingException
                 | IllegalBlockSizeException | IOException ex) {
-            throw new CryptoException("Error encrypting/decrypting file", ex);
+            throw new AESException("Error encrypting/decrypting file", ex);
         }
     }
 
-    public void testAES(){
+    public void testAES() {
         String key = "8B89C15572935aaa";
         File inputFile = new File("document.txt");
         File encryptedFile = new File("document.encrypted");
@@ -66,7 +64,7 @@ public class AES {
         try {
             AES.encrypt(key, inputFile, encryptedFile);
             AES.decrypt(key, encryptedFile, decryptedFile);
-        } catch (CryptoException ex) {
+        } catch (AESException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
