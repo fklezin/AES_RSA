@@ -39,9 +39,9 @@ public class AES {
     private void doCrypto(int cipherMode) throws AESException {
 
         try {
-            if (cipherMode==Cipher.ENCRYPT_MODE)
+            if (cipherMode==Cipher.ENCRYPT_MODE && (keyExists()==false) )
                 generateKey();
-            else if (cipherMode==Cipher.DECRYPT_MODE)
+            else if (cipherMode==Cipher.DECRYPT_MODE && (keyExists()==true) )
                 getKey();
 
             Cipher cipher = Cipher.getInstance("AES");
@@ -89,9 +89,7 @@ public class AES {
             }
             keyFile.createNewFile();
 
-
-            ObjectOutputStream keyOS = new ObjectOutputStream(
-                    new FileOutputStream(keyFile));
+            ObjectOutputStream keyOS = new ObjectOutputStream(new FileOutputStream(keyFile));
             keyOS.writeObject(this.key);
             keyOS.close();
         } catch (NoSuchAlgorithmException e) {
@@ -99,6 +97,15 @@ public class AES {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean keyExists() {
+
+        File key = new File(this.key_path);
+        if (key.exists()) {
+            return true;
+        }
+        return false;
     }
 
     public void encrypt() throws AESException {
