@@ -37,12 +37,12 @@ public class AES {
 
     //CRYPTO MAAAN
     private void doCrypto(int cipherMode) throws AESException {
+        if (keyExists())
+            getKey();
+        else
+            generateKey();
 
         try {
-            if (cipherMode==Cipher.ENCRYPT_MODE && (keyExists()==false) )
-                generateKey();
-            else if (cipherMode==Cipher.DECRYPT_MODE && (keyExists()==true) )
-                getKey();
 
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(cipherMode, this.key);
@@ -67,6 +67,7 @@ public class AES {
             ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(this.key_path));
             this.key = (SecretKey) inputStream.readObject();
 
+            inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -76,7 +77,7 @@ public class AES {
     }
 
     //GENERATE KEY
-    private void generateKey(){
+    public void generateKey(){
 
         try {
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
