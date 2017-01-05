@@ -2,71 +2,110 @@ package crypto; /**
  * Created by fklezin on 4.1.2017.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
+import factory.InputOutputStreamHandler;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.*;
 
 
 public class AES {
 
-    public static void encrypt(String key, File inputFile, File outputFile)
-            throws AESException {
-        doCrypto(Cipher.ENCRYPT_MODE, key, inputFile, outputFile);
+    //INPUT VALUES
+    private int keylength_in_bytes=128; //default value
+    private String key_path;
+    private String inputFile_path;
+    private String outputFile_path;
+
+    //GENERATE VALUES
+    private SecretKey key;
+
+    public AES(String key_path, String outputFile_path, String inputFile_path) {
+        this.key_path = key_path;
+        this.outputFile_path = outputFile_path;
+        this.inputFile_path = inputFile_path;
+
     }
 
-    public static void decrypt(String key, File inputFile, File outputFile)
-            throws AESException {
-        doCrypto(Cipher.DECRYPT_MODE, key, inputFile, outputFile);
+    public AES(int keylength_in_bytes, String key_path, String inputFile_path, String outputFile_path) {
+        this.keylength_in_bytes = keylength_in_bytes;
+        this.key_path = key_path;
+        this.inputFile_path = inputFile_path;
+        this.outputFile_path = outputFile_path;
     }
 
-    private static void doCrypto(int cipherMode, String key, File inputFile,
-                                 File outputFile) throws AESException {
+    //CRYPTO MAAAN
+    private void doCrypto(int cipherMode) throws AESException {
+
         try {
-            Key secretKey = new SecretKeySpec(key.getBytes(), "AES");
+            if (cipherMode==Cipher.ENCRYPT_MODE)
+                generateKey();
+            else if (cipherMode==Cipher.DECRYPT_MODE)
+                getKey();
+
             Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(cipherMode, secretKey);
+            cipher.init(cipherMode, this.key);
 
-            FileInputStream inputStream = new FileInputStream(inputFile);
-            byte[] inputBytes = new byte[(int) inputFile.length()];
-            inputStream.read(inputBytes);
-
+            byte[] inputBytes = InputOutputStreamHandler.readFile(this.inputFile_path);
             byte[] outputBytes = cipher.doFinal(inputBytes);
+            InputOutputStreamHandler.writeFile(this.outputFile_path,outputBytes);
 
-            FileOutputStream outputStream = new FileOutputStream(outputFile);
-            outputStream.write(outputBytes);
+            //Console log
+            System.out.println("AES successful");
 
-            inputStream.close();
-            outputStream.close();
-
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException
-                | InvalidKeyException | BadPaddingException
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException
                 | IllegalBlockSizeException | IOException ex) {
             throw new AESException("Error encrypting/decrypting file", ex);
         }
     }
 
-    public static void testAES() {
-        String key = "8B89C15572935aaa";
-        File inputFile = new File("document.txt");
-        File encryptedFile = new File("document.encrypted");
-        File decryptedFile = new File("document.decrypted");
+    //GET KEY
+    private void getKey() {
 
         try {
-            AES.encrypt(key, inputFile, encryptedFile);
-            AES.decrypt(key, encryptedFile, decryptedFile);
-        } catch (AESException ex) {
-            System.out.println(ex.getMessage());
-            ex.printStackTrace();
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(this.key_path));
+            this.key = (SecretKey) inputStream.readObject();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
+
+    }
+
+    //GENERATE KEY
+    private void generateKey(){
+
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(this.keylength_in_bytes);
+            this.key = keyGen.generateKey();
+
+            File keyFile = new File(this.key_path);
+            if (keyFile.getParentFile() != null) {
+                keyFile.getParentFile().mkdirs();
+            }
+            keyFile.createNewFile();
+
+
+            ObjectOutputStream keyOS = new ObjectOutputStream(
+                    new FileOutputStream(keyFile));
+            keyOS.writeObject(this.key);
+            keyOS.close();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void encrypt() throws AESException {
+        doCrypto(Cipher.ENCRYPT_MODE);
+    }
+
+    public void decrypt() throws AESException {
+        doCrypto(Cipher.DECRYPT_MODE);
     }
 }
