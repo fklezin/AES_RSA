@@ -1,4 +1,4 @@
-/**
+package crypto; /**
  * Created by fklezin on 4.1.2017.
  */
 
@@ -55,7 +55,7 @@ public class AES {
         }
     }
 
-    public void testAES() {
+    public static void testAES() {
         String key = "8B89C15572935aaa";
         File inputFile = new File("document.txt");
         File encryptedFile = new File("document.encrypted");

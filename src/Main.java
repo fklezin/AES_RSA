@@ -1,8 +1,10 @@
-import java.io.File;
+import crypto.AES;
+import crypto.RSA;
 
 public class Main {
 
     public static void main(String[] args) {
-       RSA.testRSA();
+       new RSA("keys/private.key","keys/public.key",2048).testRSA();
+        AES.testAES();
     }
 }
