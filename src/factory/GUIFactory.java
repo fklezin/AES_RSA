@@ -14,11 +14,12 @@ import java.io.File;
  */
 public class GUIFactory {
 
-    public static String openFileChooserGetFilePath(Stage stage){
+    public static String openFileChooserGetFilePath(Stage stage,String defaultPath){
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open file");
-
+        if (defaultPath !=null)
+            fileChooser.setInitialDirectory(new File(defaultPath));
         File selectedFile = fileChooser.showOpenDialog(stage);
         if (selectedFile != null) {
             return  selectedFile.getAbsolutePath();

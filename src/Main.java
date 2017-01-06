@@ -37,7 +37,7 @@ public class Main extends Application{
         this.mainScene = new Scene(root);
 
         AesTabInit();
-        //RSATabInit();
+        RSATabInit();
 
         this.primaryStage.setScene(this.mainScene);
         this.primaryStage.show();
@@ -47,7 +47,7 @@ public class Main extends Application{
         TextField aesKeyTextField = (TextField) mainScene.lookup("#AESkeyTextField");
         Button aesBrowseBtnKey  = (Button) mainScene.lookup("#AESbrowseBtnKey");
         aesBrowseBtnKey.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
-            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage);
+            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage,"keys");
             aesKeyTextField.setText(filePath);
         });
 
@@ -56,14 +56,14 @@ public class Main extends Application{
         TextField aesInputFileTextField = (TextField) mainScene.lookup("#AESinputFileTextField");
         Button aesBrowseBtnInputFile  = (Button) mainScene.lookup("#AESbrowseBtnInputFile");
         aesBrowseBtnInputFile.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
-            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage);
+            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage,"documents/AES");
             aesInputFileTextField.setText(filePath);
         });
 
         TextField aesOutputFileTextField = (TextField) mainScene.lookup("#AESoutputFileTextField");
         Button aesBrowseBtnOutputFile  = (Button) mainScene.lookup("#AESbrowseBtnOutputFile");
         aesBrowseBtnOutputFile.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
-            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage);
+            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage,"documents/AES");
             aesOutputFileTextField.setText(filePath);
         });
 
@@ -76,7 +76,7 @@ public class Main extends Application{
 
             if (validateAES(key,keylength,input,output)){
                 try {
-                    this.aes = new AES(Integer.parseInt(keylength),key,output,input);
+                    this.aes = new AES(Integer.parseInt(keylength),key,input,output);
                     aes.encrypt();
                 } catch (AESException e) {
                     GUIFactory.newPopupDialog(this.primaryStage, ("ERROR: AES EXCEPTION\n"+e.getMessage()) );
@@ -86,6 +86,22 @@ public class Main extends Application{
         });
 
         Button aesDecryptBtn  = (Button) mainScene.lookup("#AESdecryptBtn");
+        aesDecryptBtn.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            String key = aesKeyTextField.getText();
+            String keylength = aesKeylengthTextField.getText();
+            String input = aesInputFileTextField.getText();
+            String output = aesOutputFileTextField.getText();
+
+            if (validateAES(key,keylength,input,output)){
+                try {
+                    this.aes = new AES(Integer.parseInt(keylength),key,input,output);
+                    aes.decrypt();
+                } catch (AESException e) {
+                    GUIFactory.newPopupDialog(this.primaryStage, ("ERROR: AES EXCEPTION\n"+e.getMessage()) );
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private boolean validateAES(String key, String keylength, String input, String output) {
@@ -94,7 +110,6 @@ public class Main extends Application{
             GUIFactory.newPopupDialog(this.primaryStage,"ERROR: ONE OF THE FIELDS IS EMPTY");
             return false;
         }
-
 
         try {
             Integer.parseInt(keylength);
@@ -105,7 +120,89 @@ public class Main extends Application{
         return true;
     }
 
-    private void RSATabInit(Stage primaryStage) {
+    private void RSATabInit() {
+        TextField rsaPublicKeyTextField = (TextField) mainScene.lookup("#RSAkeyPublicTextField");
+        Button rsaBrowseBtnPublicKey  = (Button) mainScene.lookup("#RSAbrowseBtnPublicKey");
+        rsaBrowseBtnPublicKey.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage,"keys");
+            rsaPublicKeyTextField.setText(filePath);
+        });
+        TextField rsaPrivateKeyTextField = (TextField) mainScene.lookup("#RSAkeyPrivateTextField");
+        Button rsaBrowseBtnKey  = (Button) mainScene.lookup("#RSAbrowseBtnPrivateKey");
+        rsaBrowseBtnKey.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage,"keys");
+            rsaPrivateKeyTextField.setText(filePath);
+        });
+
+        TextField rsaKeylenghtTextField = (TextField) mainScene.lookup("#RSAkeylengthTextField");
+
+        TextField rsaInputFileTextField = (TextField) mainScene.lookup("#RSAinputFileTextField");
+        Button rsaBrowseBtnInputFile  = (Button) mainScene.lookup("#RSAbrowseBtnInputFile");
+        rsaBrowseBtnInputFile.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage,"documents/RSA");
+            rsaInputFileTextField.setText(filePath);
+        });
+
+        TextField rsaOutputFileTextField = (TextField) mainScene.lookup("#RSAoutputFileTextField");
+        Button rsaBrowseBtnOutputFile  = (Button) mainScene.lookup("#RSAbrowseBtnOutputFile");
+        rsaBrowseBtnOutputFile.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            String filePath= GUIFactory.openFileChooserGetFilePath(this.primaryStage,"documents/RSA");
+            rsaOutputFileTextField.setText(filePath);
+        });
+
+        Button rsaEncryptBtn  = (Button) mainScene.lookup("#RSAencryptBtn");
+        rsaEncryptBtn.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            String keyPub = rsaPublicKeyTextField.getText();
+            String keyPriv = rsaPrivateKeyTextField.getText();
+            String keylength = rsaKeylenghtTextField.getText();
+            String input = rsaInputFileTextField.getText();
+            String output = rsaOutputFileTextField.getText();
+
+            if (validateRSA(keyPriv,keyPub,keylength,input,output)){
+                try {
+                    this.rsa = new RSA(keyPriv,keyPub,Integer.parseInt(keylength),output,input);
+                    rsa.encrypt();
+                } catch (RSAException e) {
+                    GUIFactory.newPopupDialog(this.primaryStage, ("ERROR: rsa EXCEPTION\n"+e.getMessage()) );
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        Button rsaDecryptBtn  = (Button) mainScene.lookup("#RSAdecryptBtn");
+        rsaDecryptBtn.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            String keyPub = rsaPublicKeyTextField.getText();
+            String keyPriv = rsaPrivateKeyTextField.getText();
+            String keylength = rsaKeylenghtTextField.getText();
+            String input = rsaInputFileTextField.getText();
+            String output = rsaOutputFileTextField.getText();
+
+            if (validateRSA(keyPriv,keyPub,keylength,input,output)){
+                try {
+                    this.rsa = new RSA(keyPriv,keyPub,Integer.parseInt(keylength),output,input);
+                    rsa.decrypt();
+                } catch (RSAException e) {
+                    GUIFactory.newPopupDialog(this.primaryStage, ("ERROR: rsa EXCEPTION\n"+e.getMessage()) );
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+    private boolean validateRSA(String keyPriv, String keyPub, String keylength, String input, String output) {
+        if (keyPriv.isEmpty()||keyPub.isEmpty()||keylength.isEmpty()||input.isEmpty()||output.isEmpty()){
+            GUIFactory.newPopupDialog(this.primaryStage,"ERROR: ONE OF THE FIELDS IS EMPTY");
+            return false;
+        }
+
+        try {
+            Integer.parseInt(keylength);
+        } catch (NumberFormatException e) {
+            GUIFactory.newPopupDialog(this.primaryStage,"ERROR: BAD KEY VALUE");
+            return false;
+        }
+        return true;
     }
 
     public static void main(String[] args) {
@@ -113,7 +210,7 @@ public class Main extends Application{
 
     }
 
-    public static void test(){
+    public static void consoleTest(){
 
         try {
             AES aes = new AES("keys/AESkey.key","documents/AES/encrypted.txt","documents/AES/original.txt");
