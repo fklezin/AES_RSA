@@ -20,15 +20,15 @@
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
-      <TextField fx:id="keyTextField" GridPane.columnIndex="1" />
-      <Button fx:id="browseBtnKey" mnemonicParsing="false" text="Browse.." GridPane.columnIndex="2" />
-      <TextField fx:id="keylengthTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <TextField fx:id="inputFileTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <TextField fx:id="outputFileTextField" GridPane.columnIndex="4" GridPane.rowIndex="2" />
-      <Button fx:id="browseBtnInputFile" mnemonicParsing="false" text="Browse.." GridPane.columnIndex="2" GridPane.rowIndex="2" />
-      <Button fx:id="browseBtnOutputFile" mnemonicParsing="false" text="Browse.." GridPane.columnIndex="5" GridPane.rowIndex="2" />
-      <Button fx:id="encryptBtn" mnemonicParsing="false" text="Encrypt" GridPane.columnIndex="4" GridPane.rowIndex="3" />
-      <Button fx:id="decryptBtn" mnemonicParsing="false" text="Decrypt" GridPane.columnIndex="5" GridPane.rowIndex="3" />
+      <TextField fx:id="AESkeyTextField" GridPane.columnIndex="1" />
+      <Button fx:id="AESbrowseBtnKey" mnemonicParsing="false" text="Browse.." GridPane.columnIndex="2" />
+      <TextField fx:id="AESkeylengthTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <TextField fx:id="AESinputFileTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <TextField fx:id="AESoutputFileTextField" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+      <Button fx:id="AESbrowseBtnInputFile" mnemonicParsing="false" text="Browse.." GridPane.columnIndex="2" GridPane.rowIndex="2" />
+      <Button fx:id="AESbrowseBtnOutputFile" mnemonicParsing="false" text="Browse.." GridPane.columnIndex="5" GridPane.rowIndex="2" />
+      <Button fx:id="AESencryptBtn" mnemonicParsing="false" text="Encrypt" GridPane.columnIndex="4" GridPane.rowIndex="3" />
+      <Button fx:id="AESdecryptBtn" mnemonicParsing="false" text="Decrypt" GridPane.columnIndex="5" GridPane.rowIndex="3" />
       <Label text="Key path" />
       <Label text="Keylength (bytes)" GridPane.rowIndex="1" />
       <Label text="Input file path" GridPane.rowIndex="2" />
