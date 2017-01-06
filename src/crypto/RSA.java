@@ -1,32 +1,46 @@
 package crypto; /**
  * Created by fklezin on 5.1.2017.
  */
+import factory.InputOutputStreamHandler;
 
 import java.io.*;
 import java.security.*;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
 
 public class RSA {
-    //Default values, change in constructor
-    private String private_key_path = "keys/private.key";
-    private String public_key_path = "keys/public.key";
-    private int keylength_in_bits=1024;
 
-    public RSA(String private_key_path, String public_key_path, int keylength_in_bits){
+    //INPUT VALUES
+    private String private_key_path;
+    private String public_key_path;
+    private String input_file_path;
+    private String output_file_path;
+    private int keylength_in_bits=2048;
+
+    //GENERATE VALUES
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
+
+    public RSA(String private_key_path, String public_key_path, int keylength_in_bits, String output_file_path, String input_file_path){
         this.private_key_path = private_key_path;
         this.public_key_path = public_key_path;
         this.keylength_in_bits = keylength_in_bits;
+        this.input_file_path = input_file_path;
+        this.output_file_path = output_file_path;
     }
 
-    public void generateKey() throws RSAException {
+    public RSA(String private_key_path, String public_key_path, String output_file_path, String input_file_path) {
+        this.private_key_path = private_key_path;
+        this.public_key_path = public_key_path;
+        this.input_file_path = input_file_path;
+        this.output_file_path = output_file_path;
+    }
+
+    public void generateKeys() throws RSAException {
         try {
-            final KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(this.keylength_in_bits);
-            final KeyPair key = keyGen.generateKeyPair();
+            KeyPair key = keyGen.generateKeyPair();
 
             File privateKeyFile = new File(this.private_key_path);
             File publicKeyFile = new File(this.public_key_path);
@@ -43,28 +57,24 @@ public class RSA {
             publicKeyFile.createNewFile();
 
             // Saving the Public key in a file
-            ObjectOutputStream publicKeyOS = new ObjectOutputStream(
-                    new FileOutputStream(publicKeyFile));
+            ObjectOutputStream publicKeyOS = new ObjectOutputStream(new FileOutputStream(publicKeyFile));
             publicKeyOS.writeObject(key.getPublic());
             publicKeyOS.close();
 
             // Saving the Private key in a file
-            ObjectOutputStream privateKeyOS = new ObjectOutputStream(
-                    new FileOutputStream(privateKeyFile));
+            ObjectOutputStream privateKeyOS = new ObjectOutputStream(new FileOutputStream(privateKeyFile));
             privateKeyOS.writeObject(key.getPrivate());
             privateKeyOS.close();
+
+            this.privateKey = key.getPrivate();
+            this.publicKey = key.getPublic();
         } catch (NoSuchAlgorithmException | IOException ex) {
-            throw new RSAException("Error encrypting/decrypting file", ex);
+            throw new RSAException("RSA: Error encrypting/decrypting file", ex);
         }
 
     }
 
-    /**
-     * The method checks if the pair of public and private key has been generated.
-     *
-     * @return flag indicating if the pair of keys were generated.
-     */
-    public boolean areKeysPresent() {
+    public boolean keysExists() {
 
         File privateKey = new File(this.private_key_path);
         File publicKey = new File(this.public_key_path);
@@ -75,94 +85,59 @@ public class RSA {
         return false;
     }
 
-    /**
-     * Encrypt the plain text using public key.
-     *
-     * @param text
-     *          : original plain text
-     * @param key
-     *          :The public key
-     * @return Encrypted text
-     * @throws java.lang.Exception
-     */
-    public static byte[] encrypt(String text, PublicKey key) throws RSAException {
-        byte[] cipherText = null;
-        // get an crypto.RSA cipher object and print the provider
-        final Cipher cipher;
-        try {
-            cipher = Cipher.getInstance("RSA");
-            // encrypt the plain text using the public key
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            cipherText = cipher.doFinal(text.getBytes());
-            return cipherText;
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException |
-                BadPaddingException | IllegalBlockSizeException |
-                InvalidKeyException ex) {
-            throw new RSAException("Error encrypting/decrypting file", ex);
-        }
-    }
-
-    /**
-     * Decrypt text using private key.
-     *
-     * @param text
-     *          :encrypted text
-     * @param key
-     *          :The private key
-     * @return plain text
-     * @throws java.lang.Exception
-     */
-    public static String decrypt(byte[] text, PrivateKey key) {
-        byte[] dectyptedText = null;
-        try {
-            // get an crypto.RSA cipher object and print the provider
-            final Cipher cipher = Cipher.getInstance("RSA");
-
-            // decrypt the text using the private key
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            dectyptedText = cipher.doFinal(text);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return new String(dectyptedText);
-    }
-
-    /**
-     * Test the EncryptionUtil
-     */
-    public void testRSA() {
+    //GET KEYS
+    private void getKeys() {
+        ObjectInputStream inputStream;
 
         try {
-
-            // Check if the pair of keys are present else generate those.
-            if (!areKeysPresent()) {
-                // Method generates a pair of keys using the crypto.RSA algorithm and stores it
-                // in their respective files
-                generateKey();
-            }
-
-            final String originalText = "Text to be encrypted ";
-            ObjectInputStream inputStream = null;
-
-            // Encrypt the string using the public key
             inputStream = new ObjectInputStream(new FileInputStream(this.public_key_path));
-            final PublicKey publicKey = (PublicKey) inputStream.readObject();
-            final byte[] cipherText = encrypt(originalText, publicKey);
+            this.publicKey = (PublicKey) inputStream.readObject();
 
-            // Decrypt the cipher text using the private key.
             inputStream = new ObjectInputStream(new FileInputStream(this.private_key_path));
-            final PrivateKey privateKey = (PrivateKey) inputStream.readObject();
-            final String plainText = decrypt(cipherText, privateKey);
+            this.privateKey = (PrivateKey) inputStream.readObject();
 
-            // Printing the Original, Encrypted and Decrypted Text
-            System.out.println("Original: " + originalText);
-            System.out.println("Encrypted: " +cipherText.toString());
-            System.out.println("Decrypted: " + plainText);
-
-        } catch (Exception e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
     }
+
+    private void doCrypto(int cipherMode) throws RSAException {
+        if (keysExists())
+            getKeys();
+        else
+            generateKeys();
+
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            if (cipherMode==Cipher.DECRYPT_MODE){
+                cipher.init(Cipher.DECRYPT_MODE, this.privateKey);
+            }
+            else if (cipherMode==Cipher.ENCRYPT_MODE){
+                cipher.init(Cipher.ENCRYPT_MODE, this.publicKey);
+            }
+
+            byte[] inputBytes = InputOutputStreamHandler.readFile(this.input_file_path);
+            byte[] outputBytes = cipher.doFinal(inputBytes);
+            InputOutputStreamHandler.writeFile(this.output_file_path,outputBytes);
+
+            System.out.println("RSA successful");
+
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException |
+                BadPaddingException | IllegalBlockSizeException |
+                InvalidKeyException | IOException ex) {
+            throw new RSAException("RSA: Error encrypting/decrypting file", ex);
+        }
+    }
+
+    public void encrypt() throws RSAException {
+        doCrypto(Cipher.ENCRYPT_MODE);
+    }
+
+    public void decrypt() throws RSAException {
+        doCrypto(Cipher.DECRYPT_MODE);
+    }
+
 }
